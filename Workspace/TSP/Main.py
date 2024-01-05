@@ -70,8 +70,8 @@ def RandomForestTree(
     print("Predicted Probability Values for All Classes:")
     print(y_pred_proba[:20])
     threshold = 0.4
-    y_predicted = (y_pred_proba[:, 1] > threshold).astype(int)
-    # y_predicted = model.predict(X_test)
+    #y_predicted = (y_pred_proba[:, 1] > threshold).astype(int)
+    y_predicted = model.predict(X_test)
     print(y_predicted[:20])
 
     accuracy = model.score(X_test, y_test)
@@ -83,7 +83,7 @@ def RandomForestTree(
     print("Precision: ", precision)
     print("Recall: ", recall)
     print("F1-Score: ", f1)
-
+    
     cm = confusion_matrix(y_test, y_predicted)
 
     plt.figure(figsize=(10, 7))

@@ -200,7 +200,9 @@ def calculateTargets(edges_optimal, edges_greedy):
     targets = []
     for i in range(len(edges_greedy)):
         for edge in edges_greedy[i]:
-            if edge in edges_optimal[i]:
+            v1 = edge[0]
+            v2 = edge[1]
+            if (v1, v2) in edges_optimal[i] or (v2, v1) in edges_optimal[i]:
                 targets.append(1)
             else:
                 targets.append(0)
