@@ -53,11 +53,7 @@ def RandomForestTree(
     )
 
     X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.2)
-    print(X_train[:20])
-    print(
-        "-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-    )
-    print(X_test[:20])
+    
     model = RandomForestClassifier(
         n_estimators=50,
         max_depth=10,
@@ -66,13 +62,8 @@ def RandomForestTree(
         criterion="gini",
     )
     model.fit(X_train, y_train)
-    y_pred_proba = model.predict_proba(X_test)
-    print("Predicted Probability Values for All Classes:")
-    print(y_pred_proba[:20])
-    threshold = 0.4
-    #y_predicted = (y_pred_proba[:, 1] > threshold).astype(int)
+    
     y_predicted = model.predict(X_test)
-    print(y_predicted[:20])
 
     accuracy = model.score(X_test, y_test)
     precision = precision_score(y_test, y_predicted)
