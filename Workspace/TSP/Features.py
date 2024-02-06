@@ -1,33 +1,46 @@
 import math
 import Utilities as ut
 import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
 from scipy.sparse.csgraph import minimum_spanning_tree
 from scipy.sparse import csr_matrix
 from scipy.spatial import distance_matrix
 from tqdm import tqdm, trange
-from scipy.sparse import find
 
-
-def mstFeature(vertices, k=10):
-    result = []
-    n = len(vertices)
-    points = [{"x": p[0], "y": p[1]} for p in vertices]
-    matrix = createMatrix(points, n)
-    for i in range(k):
-        print(matrix)
-        resultMST = minimum_spanning_tree(matrix)
-        tree = resultMST.toarray().astype(int)
-        edgelist = []
-        for j in range(n):
-            for l in range(n):
-                if tree[j][l] != 0:
-                    edgelist.append([j, l])
-                    result.append(((j, l), (i + 1)))
-        matrix = updateMatrix(matrix, edgelist)
-    return result
-
+def mstFeature(vertices, greedy_edges, k=10):
+    mst_edges = []
+    values = []
+    
+    for m in trange(len(vertices)):
+        mst_edges_instance = []
+        values_unsorted = []
+        greedy_edges_instance = greedy_edges[m]
+        points = [{'x' : p[0], 'y': p[1]} for p in vertices[m]]
+        n = len(points)
+        matrix = createMatrix(points, n)
+        graph = csr_matrix(matrix)
+        for i in range(k):
+            resultMST = minimum_spanning_tree(graph)
+            tree = resultMST.toarray().astype(int)
+            edgelist = []
+            for j in range(n):
+                for l in range(n):
+                    if tree[j][l] != 0:
+                        edgelist.append([j, l])
+                        if (j, l) in greedy_edges_instance or (l, j) in greedy_edges_instance:
+                            mst_edges_instance.append((j, l))
+                            values_unsorted.append(i + 1)
+            matrix = updateMatrix(matrix, edgelist)
+            graph = csr_matrix(matrix)
+        for j in range(len(greedy_edges_instance)):
+            x = greedy_edges_instance[j][0]
+            y = greedy_edges_instance[j][1]
+            if (x, y) not in mst_edges_instance and (y, x) not in mst_edges_instance:
+                mst_edges_instance.append((x, y))
+                values_unsorted.append(2 * k)
+        mst_edges_instance, values_unsorted = sort_values_to_greedy(mst_edges_instance, greedy_edges_instance, values_unsorted)
+        mst_edges.extend(mst_edges_instance)
+        values.extend(values_unsorted)
+    return values
 
 def createMatrix(points, n):
     matrix = [[0 for i in range(n)] for j in range(n)]
@@ -35,7 +48,7 @@ def createMatrix(points, n):
         for j in range(i + 1, n):
             matrix[i][j] = distance(points[i], points[j])
             matrix[j][i] = matrix[i][j]
-    return csr_matrix(matrix)
+    return matrix
 
 
 def updateMatrix(matrix, edgelist):
@@ -43,10 +56,9 @@ def updateMatrix(matrix, edgelist):
     for e in edgelist:
         i = e[0]
         j = e[1]
-        updatedMatrix[i, j] = 0
-        updatedMatrix[j, i] = 0
+        updatedMatrix[i][j] = 0
+        updatedMatrix[j][i] = 0
     return updatedMatrix
-
 
 def localFeatures(vertices, edges):
     f1 = []
@@ -233,3 +245,25 @@ def distance2(node1, node2):
     x12 = x1 - x2
     y12 = y1 - y2
     return round(math.sqrt(x12**2 + y12**2))
+
+def sort_values_to_greedy(mst_edges, greedy_edges_instance, values):
+    sorted_edges_set = set(greedy_edges_instance)
+    needs_reversal = set()
+    
+    for edge in mst_edges:
+        if edge not in sorted_edges_set and (edge[1], edge[0]) in sorted_edges_set:
+            needs_reversal.add(edge)
+
+    adjusted_unsorted_edges = [(e[1], e[0]) if e in needs_reversal else e for e in mst_edges]
+
+    edge_to_sorted_index = {edge: i for i, edge in enumerate(greedy_edges_instance)}
+
+    indexed_values = [(edge_to_sorted_index[edge], value) for edge, value in zip(adjusted_unsorted_edges, values)]
+    indexed_values.sort(key=lambda x: x[0])
+
+    sorted_values = [value for _, value in indexed_values]
+
+    sorted_unsorted_edges = sorted(adjusted_unsorted_edges, key=lambda edge: edge_to_sorted_index[edge])
+
+    assert sorted_unsorted_edges == greedy_edges_instance, "Edges not sorted or adjusted correctly"
+    return sorted_unsorted_edges, sorted_values

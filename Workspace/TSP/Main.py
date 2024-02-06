@@ -15,7 +15,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 
 
 def RandomForestTree(
-    localFeatures, graphFeatures, heuristicsFeature, krng, sumHeuristicsFeature, targets
+    localFeatures, graphFeatures, heuristicsFeature, krng, sumHeuristicsFeature, mstFeature, targets
 ):
     nearn, farins, randins, nearins, cheapins, mst, christo = heuristicsFeature[:7]
     (
@@ -49,11 +49,12 @@ def RandomForestTree(
             "christo": christo,
             "krng": krng,
             "sumHeuristicsFeature": sumHeuristicsFeature,
+            "mstFeature": mstFeature,
         }
     )
-
     X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.2)
-    
+    print(X_train[:50])
+    print(X_test[:50])
     model = RandomForestClassifier(
         n_estimators=50,
         max_depth=10,
@@ -82,7 +83,7 @@ def RandomForestTree(
     plt.xlabel("Predicted")
     plt.ylabel("Truth")
     plt.show()
-    return model, X
+    return model, X, cm
 
 
 def xGBoostClassifier(
@@ -91,6 +92,7 @@ def xGBoostClassifier(
     heuristicFeatures,
     krng,
     sumHeuristicsFeature,
+    mstFeature,
     targets,
     feature_names,
 ):
@@ -126,9 +128,10 @@ def xGBoostClassifier(
             "christo": christo,
             "krng": krng,
             "sumHeuristicsFeature": sumHeuristicsFeature,
+            "mstFeature": mstFeature,
         }
     )
-    X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.2)
+    X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.5)
 
     dM_X_train = xgb.DMatrix(X_train, label=y_train, feature_names=feature_names)
     dM_X_test = xgb.DMatrix(X_test, feature_names=feature_names)
@@ -194,7 +197,6 @@ def xgb_feature_importance(model):
     plt.title("Feature Importance in XGBoost")
     plt.show()
 
-
 def visualize_decision_tree(model, feature_names, max_depth=None):
     tree_to_visualize = model.estimators_[0]
 
@@ -210,16 +212,14 @@ def visualize_decision_tree(model, feature_names, max_depth=None):
     )
     plt.show()
 
+def sensitivity(confusion_matrix):
+    true_positive = confusion_matrix[1][1]
+    false_negative = confusion_matrix[1][0]
+    return true_positive / (true_positive + false_negative)
 
-def save_feature(feature, feature_name):
-    np.save(
-        "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\"
-        + feature_name
-        + ".npy",
-        feature,
-    )
-
-
+mstFeature = np.load(
+    "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\mstFeature.npy"
+)
 localfeatures = np.load(
     "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\localfeatures.npy"
 )
@@ -258,11 +258,13 @@ feature_names = [
     "christo",
     "krng",
     "sumHeuristicsFeature",
+    "mstFeature",
 ]
 """
 vertices = ut.listNodes()
 edges_optimal = ut.listToTuple(ut.listOptimalTour())
 edges_greedy = ut.listToTuple(ut.listGreedyTour())
+
 edges_nearn = ut.listToTuple(ut.listNearnTour())
 edges_farins = ut.listToTuple(ut.listFarinsTour())
 edges_randins = ut.listToTuple(ut.listRandinsTour())
@@ -294,6 +296,8 @@ sumHeuristicsFeature = feat.sumHeuristicsFeature(
 )
 krngFeature = feat.kRNGFeature(vertices, edges_greedy)
 targets = feat.calculateTargets(edges_optimal, edges_greedy)
+values = feat.mstFeature(vertices, edges_greedy)
+
 
 np.save(
     "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\localfeatures.npy",
@@ -319,19 +323,26 @@ np.save(
     "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\targets.npy",
     targets,
 )
+np.save(
+    "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\mstFeature.npy",
+    values,
+)
 """
-rft = RandomForestTree(
+model, X, cm = RandomForestTree(
     localfeatures,
     graphFeatures,
     heuristicsFeature,
     krngFeature,
     sumHeuristicsFeature,
+    mstFeature,
     targets,
 )
-model = rft[0]
-X = rft[1]
+
+print("Sensitivity: " + str(sensitivity(cm)))
+
 visualize_decision_tree(model, feature_names, max_depth=3)
 rft_feature_importance(X, model, feature_names)
+
 """
 xgboost = xGBoostClassifier(
     localfeatures,
@@ -339,6 +350,7 @@ xgboost = xGBoostClassifier(
     heuristicsFeature,
     krngFeature,
     sumHeuristicsFeature,
+    mstFeature,
     targets,
     feature_names,
 )
