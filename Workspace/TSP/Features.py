@@ -1,5 +1,4 @@
 import math
-import Utilities as ut
 import numpy as np
 from scipy.sparse.csgraph import minimum_spanning_tree
 from scipy.sparse import csr_matrix
@@ -150,9 +149,7 @@ def heuristicsFeature(greedy, nearn, fartins, randins, nearins, cheapins, mst, c
                 result_nearins.append(1)
             else:
                 result_nearins.append(0)
-            if (x, y) in cheapins[instance_number] or (y, x) in cheapins[
-                instance_number
-            ]:
+            if (x, y) in cheapins[instance_number] or (y, x) in cheapins[instance_number]:
                 result_cheapins.append(1)
             else:
                 result_cheapins.append(0)

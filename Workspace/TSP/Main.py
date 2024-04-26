@@ -1,7 +1,6 @@
 import Features as feat
 import matplotlib.pyplot as plt
 import numpy as np
-import tabulate as tab
 import Utilities as ut
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -53,8 +52,6 @@ def RandomForestTree(
         }
     )
     X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.2)
-    print(X_train[:50])
-    print(X_test[:50])
     model = RandomForestClassifier(
         n_estimators=50,
         max_depth=10,
@@ -131,7 +128,7 @@ def xGBoostClassifier(
             "mstFeature": mstFeature,
         }
     )
-    X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.5)
+    X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.2)
 
     dM_X_train = xgb.DMatrix(X_train, label=y_train, feature_names=feature_names)
     dM_X_test = xgb.DMatrix(X_test, feature_names=feature_names)
@@ -216,6 +213,21 @@ def sensitivity(confusion_matrix):
     true_positive = confusion_matrix[1][1]
     false_negative = confusion_matrix[1][0]
     return true_positive / (true_positive + false_negative)
+
+def example(vertices, edges):
+
+    plt.figure(figsize=(8, 6))
+
+    for x, y in vertices:
+        plt.plot(x, y, 'bo')
+    # Plot edges
+    for start, end in edges:
+        start_vertex = vertices[start]
+        end_vertex = vertices[end]
+        plt.plot([start_vertex[0], end_vertex[0]], [start_vertex[1], end_vertex[1]], 'r-')
+
+    plt.axis('equal')
+    plt.show()
 
 mstFeature = np.load(
     "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\mstFeature.npy"

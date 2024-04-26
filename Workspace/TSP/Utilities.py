@@ -1,6 +1,5 @@
 import json
 
-
 def readJSON(datadir):
     f = open(datadir)
     data = json.load(f)
