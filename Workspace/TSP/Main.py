@@ -300,6 +300,7 @@ np.save(
     "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\mstFeature.npy",
     values,
 )
+"""
 model, X, cm = RandomForestTree(
     localfeatures,
     graphFeatures,
@@ -313,7 +314,7 @@ model, X, cm = RandomForestTree(
 visualize_decision_tree(model, feature_names, max_depth=3)
 rft_feature_importance(X, model, feature_names)
 
-"""
+
 xgboost = xGBoostClassifier(
     localfeatures,
     graphFeatures,
