@@ -5,7 +5,6 @@ import Utilities as ut
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-import matplotlib.pyplot as plt
 import seaborn as sn
 import pandas as pd
 import xgboost as xgb
@@ -13,9 +12,7 @@ from sklearn.tree import plot_tree
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 
-def RandomForestTree(
-    localFeatures, graphFeatures, heuristicsFeature, krng, sumHeuristicsFeature, mstFeature, targets
-):
+def RandomForestTree(localFeatures, graphFeatures, heuristicsFeature, krng, sumHeuristicsFeature, mstFeature, targets):
     nearn, farins, randins, nearins, cheapins, mst, christo = heuristicsFeature[:7]
     (
         localfeature1,
@@ -83,16 +80,7 @@ def RandomForestTree(
     return model, X, cm
 
 
-def xGBoostClassifier(
-    localFeatures,
-    graphFeatures,
-    heuristicFeatures,
-    krng,
-    sumHeuristicsFeature,
-    mstFeature,
-    targets,
-    feature_names,
-):
+def xGBoostClassifier(localFeatures,graphFeatures,heuristicFeatures,krng,sumHeuristicsFeature,mstFeature,targets,feature_names):
     nearn, farins, randins, nearins, cheapins, mst, christo = heuristicFeatures[:7]
     (
         localfeature1,
@@ -103,7 +91,6 @@ def xGBoostClassifier(
         localfeature6,
     ) = localFeatures[:6]
     graphFeature1, graphFeature2, graphFeature3, graphFeature4 = graphFeatures[:4]
-
     X = pd.DataFrame(
         {
             "localfeature1": localfeature1,
@@ -129,10 +116,8 @@ def xGBoostClassifier(
         }
     )
     X_train, X_test, y_train, y_test = train_test_split(X, targets, test_size=0.2)
-
     dM_X_train = xgb.DMatrix(X_train, label=y_train, feature_names=feature_names)
     dM_X_test = xgb.DMatrix(X_test, feature_names=feature_names)
-
     params = {
         "learning_rate": 0.1,
         "max_depth": 3,
@@ -146,25 +131,21 @@ def xGBoostClassifier(
         "objective": "binary:logistic",
     }
     model = xgb.train(params, dM_X_train, num_boost_round=1000)
-
     y_predicted = model.predict(dM_X_test)
-
     accuracy = accuracy_score(y_test, (y_predicted > 0.5).astype(int))
     print(f"Accuracy: {accuracy:.2f}")
-
     print(
         "Classification Report:\n",
         classification_report(y_test, (y_predicted > 0.5).astype(int)),
     )
     cm = confusion_matrix(y_test, (y_predicted > 0.5).astype(int))
     print("Confusion Matrix:\n", cm)
-
+    
     plt.figure(figsize=(10, 7))
     sn.heatmap(cm, annot=True, fmt="d")
     plt.xlabel("Predicted")
     plt.ylabel("Truth")
     plt.show()
-
     return model
 
 
@@ -207,26 +188,6 @@ def visualize_decision_tree(model, feature_names, max_depth=None):
         rounded=True,
         max_depth=max_depth,
     )
-    plt.show()
-
-def sensitivity(confusion_matrix):
-    true_positive = confusion_matrix[1][1]
-    false_negative = confusion_matrix[1][0]
-    return true_positive / (true_positive + false_negative)
-
-def example(vertices, edges):
-
-    plt.figure(figsize=(8, 6))
-
-    for x, y in vertices:
-        plt.plot(x, y, 'bo')
-    # Plot edges
-    for start, end in edges:
-        start_vertex = vertices[start]
-        end_vertex = vertices[end]
-        plt.plot([start_vertex[0], end_vertex[0]], [start_vertex[1], end_vertex[1]], 'r-')
-
-    plt.axis('equal')
     plt.show()
 
 mstFeature = np.load(
@@ -339,7 +300,6 @@ np.save(
     "C:\\Users\\ahmad\\Documents\\Visual Studio Code\\Workspace\\TSP\\mstFeature.npy",
     values,
 )
-"""
 model, X, cm = RandomForestTree(
     localfeatures,
     graphFeatures,
@@ -349,8 +309,6 @@ model, X, cm = RandomForestTree(
     mstFeature,
     targets,
 )
-
-print("Sensitivity: " + str(sensitivity(cm)))
 
 visualize_decision_tree(model, feature_names, max_depth=3)
 rft_feature_importance(X, model, feature_names)
@@ -367,4 +325,3 @@ xgboost = xGBoostClassifier(
     feature_names,
 )
 xgb_feature_importance(xgboost)
-"""
