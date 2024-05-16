@@ -60,12 +60,7 @@ def updateMatrix(matrix, edgelist):
     return updatedMatrix
 
 def localFeatures(vertices, edges):
-    f1 = []
-    f2 = []
-    f3 = []
-    f4 = []
-    f5 = []
-    f6 = []
+    f1, f2, f3, f4, f5, f6 = []
     for k in trange(len(vertices), desc="localfeatures"):
         points = np.array(vertices[k])
         distances = distance_matrix(points, points)
@@ -90,10 +85,7 @@ def localFeatures(vertices, edges):
 
 
 def graphFeatures(vertices, edges):
-    f1 = []
-    f2 = []
-    f3 = []
-    f4 = []
+    f1, f2, f3, f4 = []
     for k in trange(len(vertices), desc="graphfeatures"):
         points = np.array(vertices[k])
         distances = distance_matrix(points, points)

@@ -121,13 +121,8 @@ def xGBoostClassifier(localFeatures,graphFeatures,heuristicFeatures,krng,sumHeur
     params = {
         "learning_rate": 0.1,
         "max_depth": 3,
-        "min_child_weight": 1,
-        "gamma": 0,
         "subsample": 0.8,
         "colsample_bytree": 0.8,
-        "reg_lambda": 1,
-        "reg_alpha": 0,
-        "scale_pos_weight": 1,
         "objective": "binary:logistic",
     }
     model = xgb.train(params, dM_X_train, num_boost_round=1000)
